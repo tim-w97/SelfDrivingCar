@@ -7,7 +7,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
 from omniisaacgymenvs.robots.articulations.car import Car
 
-class SelfDrivingCarTask(RLTask):
+class CarTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
         self.update_config(sim_config)
         self._max_episode_length = 1000  # Adjust episode length as needed

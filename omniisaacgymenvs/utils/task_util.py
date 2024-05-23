@@ -21,8 +21,7 @@ def import_tasks():
     from omniisaacgymenvs.tasks.warp.cartpole import CartpoleTask as CartpoleTaskWarp
     from omniisaacgymenvs.tasks.warp.humanoid import HumanoidLocomotionTask as HumanoidLocomotionTaskWarp
 
-    # TODO: maybe adjust this path later
-    from omniisaacgymenvs.tasks.self_driving_car import SelfDrivingCarTask
+    from omniisaacgymenvs.tasks.car import CarTask
 
     # Mappings from strings to environments
     task_map = {
@@ -45,7 +44,7 @@ def import_tasks():
         "ShadowHand": ShadowHandTask,
         "ShadowHandOpenAI_FF": ShadowHandTask,
         "ShadowHandOpenAI_LSTM": ShadowHandTask,
-        "SelfDrivingCar": SelfDrivingCarTask,
+        "Car": CarTask,
     }
 
     task_map_warp = {

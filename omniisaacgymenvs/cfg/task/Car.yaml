@@ -1,5 +1,5 @@
 # name of the task - this should match the name used in the task mapping dictionary in task_util.py
-name: SelfDrivingCar
+name: Car
 
 # physics engine - only physx is currently supported. This value does not need to be modified.
 physics_engine: ${..physics_engine}
@@ -7,7 +7,9 @@ physics_engine: ${..physics_engine}
 # task-related parameters
 env:
   # number of environments to create
-  numEnvs: ${resolve_default:512,${...num_envs}}
+  numEnvs: 1
+  # numEnvs: ${resolve_default:512,${...num_envs}}
+
   # spacing between each environment (in meters)
   envSpacing: 4.0
 
@@ -88,7 +90,7 @@ sim:
   # each asset in the task can override physics parameters defined in the scene
   # the name of the asset must match the name of the ArticulationView for the asset in the task
   # additional Articulation and rigid body documentation can be found at https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/104.2/class_physx_schema_physx_articulation_a_p_i.html and https://docs.omniverse.nvidia.com/kit/docs/omni_usd_schema_physics/104.2/class_physx_schema_physx_rigid_body_a_p_i.html
-  SelfDrivingCar:
+  Car:
     # a value of -1 means to use the same values defined in the physics scene
     override_usd_defaults: False
     enable_self_collisions: False
