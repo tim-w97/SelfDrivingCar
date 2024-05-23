@@ -36,7 +36,7 @@ class SelfDrivingCarTask(RLTask):
         self.get_car()
         super().set_up_scene(scene)
         self._cars = ArticulationView(
-            prim_paths_expr="/World/envs/.*/Vehicle", name="Vehicle", reset_xform_properties=False
+            prim_paths_expr="/World/envs/.*/Car", name="Car", reset_xform_properties=False
         )
         scene.add(self._cars)
         return
@@ -46,14 +46,14 @@ class SelfDrivingCarTask(RLTask):
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
         self._cars = ArticulationView(
-            prim_paths_expr="/World/envs/.*/Vehicle", name="Vehicle", reset_xform_properties=False
+            prim_paths_expr="/World/envs/.*/Car", name="Car", reset_xform_properties=False
         )
         scene.add(self._cars)
 
     def get_car(self):
         car = Car(
             usd_path="/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/lidar_car.usd",
-            prim_path=self.default_zero_env_path + "/Vehicle", name="Vehicle",
+            prim_path=self.default_zero_env_path + "/Car", name="Car",
             translation=self._car_positions
         )
         self._sim_config.apply_articulation_settings(
