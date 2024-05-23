@@ -36,7 +36,7 @@ class SelfDrivingCarTask(RLTask):
         self.get_car()
         super().set_up_scene(scene)
         self._cars = ArticulationView(
-            prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
+            prim_paths_expr="/World/envs/.*/Vehicle", name="Vehicle", reset_xform_properties=False
         )
         scene.add(self._cars)
         return
@@ -46,7 +46,7 @@ class SelfDrivingCarTask(RLTask):
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
         self._cars = ArticulationView(
-            prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
+            prim_paths_expr="/World/envs/.*/Vehicle", name="Vehicle", reset_xform_properties=False
         )
         scene.add(self._cars)
 
