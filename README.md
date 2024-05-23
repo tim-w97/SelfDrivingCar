@@ -4,11 +4,16 @@
 
 Training starten
 
-```/opt/localdata/VirtualBoxVMs/ov/isaac_sim-2023.1.1/python.sh omniisaacgymenvs/scripts/rlgames_train.py task=SelfDrivingCar```
+```shell
+/opt/localdata/VirtualBoxVMs/ov/isaac_sim-2023.1.1/python.sh omniisaacgymenvs/scripts/rlgames_train.py task=SelfDrivingCar
+```
+
+<br/>
 
 ### Observations
 - Vorschlag: 3 Lidar-Sensoren vorne am Auto
 
+<br/>
 
 ### Actions
 
