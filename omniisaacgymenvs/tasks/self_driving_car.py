@@ -53,7 +53,7 @@ class SelfDrivingCarTask(RLTask):
     def get_car(self):
         car = Car(
             usd_path="/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/lidar_car.usd",
-            prim_path="World/Car", name="Car",
+            prim_path=self.default_zero_env_path + "/Car", name="Car",
             translation=self._car_positions
         )
         self._sim_config.apply_articulation_settings(
