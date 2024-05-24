@@ -55,7 +55,7 @@ class CarTask(RLTask):
         print("get_car() prim_path", prim_path)
 
         car = Car(
-            usd_path="/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/lidar_car.usd",
+            usd_path="/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/car.usd",
             prim_path=prim_path, name="Car",
             translation=self._car_positions
         )
