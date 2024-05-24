@@ -26,7 +26,7 @@ class CarTask(RLTask):
 
         self._num_envs = self._task_cfg["env"]["numEnvs"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._car_positions = torch.tensor([0.0, 0.0, 0.0])  # Adjust initial positions
+        self._car_positions = torch.tensor([0.0, 0.0, 2.0])
 
         self._reset_dist = self._task_cfg["env"]["resetDist"]
         self._max_steering_angle = self._task_cfg["env"]["maxSteeringAngle"]
@@ -98,7 +98,7 @@ class CarTask(RLTask):
         controls[:, self._acceleration_dof_idx] = self._max_acceleration * actions[:, 1]
 
         indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
-        self._cars.set_joint_controls(controls, indices=indices)
+        self._cars.set_joint_positions(controls, indices=indices)
 
     def reset_idx(self, env_ids):
         num_resets = len(env_ids)
