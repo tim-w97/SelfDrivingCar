@@ -38,6 +38,9 @@ class CarTask(RLTask):
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
+
+        print("ArticulationView:", self._cars)
+
         scene.add(self._cars)
         return
 
