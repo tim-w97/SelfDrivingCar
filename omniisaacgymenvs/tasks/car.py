@@ -94,7 +94,7 @@ class CarTask(RLTask):
         actions = actions.to(self._device)
 
         controls = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        controls[:, self._steering_dof_idx] = self._max_steering_angle * actions[:, 0]
+        controls[:, self._car_steering_idx] = self._max_steering_angle * actions[:, 0]
         controls[:, self._acceleration_dof_idx] = self._max_acceleration * actions[:, 1]
 
         indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
@@ -118,11 +118,11 @@ class CarTask(RLTask):
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        self._car_pos_idx = self._cars.get_dof_index("carPosition")
-        self._car_vel_idx = self._cars.get_dof_index("carVelocity")
-        self._car_orientation_idx = self._cars.get_dof_index("carOrientation")
-        self._car_steering_idx = self._cars.get_dof_index("steeringJoint")
-        self._acceleration_dof_idx = self._cars.get_dof_index("accelerationJoint")
+        self._car_pos_idx = self._cars.get_dof_index("cartJoint")
+        self._car_vel_idx = self._cars.get_dof_index("cartJoint")
+        self._car_orientation_idx = self._cars.get_dof_index("cartJoint")
+        self._car_steering_idx = self._cars.get_dof_index("cartJoint")
+        self._acceleration_dof_idx = self._cars.get_dof_index("cartJoint")
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
