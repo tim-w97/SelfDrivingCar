@@ -7,8 +7,7 @@ physics_engine: ${..physics_engine}
 # task-related parameters
 env:
   # number of environments to create
-  numEnvs: 1
-  # numEnvs: ${resolve_default:512,${...num_envs}}
+  numEnvs: ${resolve_default:512,${...num_envs}}
 
   # spacing between each environment (in meters)
   envSpacing: 4.0
