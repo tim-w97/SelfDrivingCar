@@ -10,7 +10,7 @@ env:
   numEnvs: ${resolve_default:512,${...num_envs}}
 
   # spacing between each environment (in meters)
-  envSpacing: 4.0
+  envSpacing: 6.0
 
   # Cartpole reset distance limit
   resetDist: 3.0
