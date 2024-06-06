@@ -118,11 +118,11 @@ class CarTask(RLTask):
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        self._car_pos_idx = self._cars.get_dof_index("cartJoint")
-        self._car_vel_idx = self._cars.get_dof_index("cartJoint")
-        self._car_orientation_idx = self._cars.get_dof_index("cartJoint")
-        self._car_steering_idx = self._cars.get_dof_index("cartJoint")
-        self._acceleration_dof_idx = self._cars.get_dof_index("cartJoint")
+        #self._car_pos_idx = self._cars.get_dof_index("cartJoint")
+        #self._car_vel_idx = self._cars.get_dof_index("cartJoint")
+        #self._car_orientation_idx = self._cars.get_dof_index("cartJoint")
+        #self._car_steering_idx = self._cars.get_dof_index("cartJoint")
+        #self._acceleration_dof_idx = self._cars.get_dof_index("cartJoint")
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
