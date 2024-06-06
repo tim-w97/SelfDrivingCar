@@ -48,10 +48,10 @@ class CarTask(RLTask):
         super().initialize_views(scene)
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
-        self._cars = ArticulationView(
-            prim_paths_expr="/World/envs/.*/car", name="car_view", reset_xform_properties=False
-        )
-        scene.add(self._cars)
+        #self._cars = ArticulationView(
+        #    prim_paths_expr="/World/envs/.*/car", name="car_view", reset_xform_properties=False
+        #)
+        #scene.add(self._cars)
 
     def get_car(self):
         prim_path = self.default_zero_env_path + "/car"
