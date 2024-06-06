@@ -1,11 +1,11 @@
 import math
-
 import numpy as np
 import torch
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
 from omniisaacgymenvs.robots.articulations.car import Car
+from omni.isaac.core.sensors import LidarSensor
 
 class CarTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
@@ -13,7 +13,7 @@ class CarTask(RLTask):
         self._max_episode_length = 1000  # Adjust episode length as needed
 
         # Update number of observations and actions based on car's state
-        self._num_observations = 8  # Example: position, velocity, orientation, etc.
+        self._num_observations = 8 + 360  # Example: position, velocity, orientation, etc. + LIDAR points
         self._num_actions = 2  # Example: steering angle, acceleration
 
         RLTask.__init__(self, name, env)
@@ -42,6 +42,7 @@ class CarTask(RLTask):
         print("ArticulationView:", self._cars)
 
         scene.add(self._cars)
+        self.set_up_lidar_sensors()
         return
 
     def initialize_views(self, scene):
@@ -52,6 +53,23 @@ class CarTask(RLTask):
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
         scene.add(self._cars)
+        self.set_up_lidar_sensors()
+
+    def set_up_lidar_sensors(self):
+        self.lidar_sensors = []
+        for i in range(self._num_envs):
+            prim_path = f"/World/envs/env_{i}/Car/LidarSensor"
+            lidar_sensor = LidarSensor(
+                prim_path=prim_path,
+                min_range=0.1,
+                max_range=100.0,
+                horizontal_fov=360.0,
+                vertical_fov=30.0,
+                resolution=360,
+                rotation_rate=10.0,
+                sensor_tick=0.1
+            )
+            self.lidar_sensors.append(lidar_sensor)
 
     def get_car(self):
         prim_path = self.default_zero_env_path + "/Car"
@@ -79,6 +97,10 @@ class CarTask(RLTask):
         self.obs_buf[:, 1] = self.car_vel
         self.obs_buf[:, 2] = self.car_orientation
         self.obs_buf[:, 3] = self.car_steering_angle
+
+        for i, lidar_sensor in enumerate(self.lidar_sensors):
+            lidar_data = lidar_sensor.get_range_data()
+            self.obs_buf[i, 4:4+360] = lidar_data
 
         observations = {self._cars.name: {"obs_buf": self.obs_buf}}
         return observations
@@ -118,20 +140,18 @@ class CarTask(RLTask):
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        #self._car_pos_idx = self._cars.get_dof_index("cartJoint")
-        #self._car_vel_idx = self._cars.get_dof_index("cartJoint")
-        #self._car_orientation_idx = self._cars.get_dof_index("cartJoint")
-        #self._car_steering_idx = self._cars.get_dof_index("cartJoint")
-        #self._acceleration_dof_idx = self._cars.get_dof_index("cartJoint")
+        self._car_pos_idx = self._cars.get_dof_index("position")
+        self._car_vel_idx = self._cars.get_dof_index("velocity")
+        self._car_orientation_idx = self._cars.get_dof_index("orientation")
+        self._car_steering_idx = self._cars.get_dof_index("steering")
+        self._acceleration_dof_idx = self._cars.get_dof_index("acceleration")
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
 
     def calculate_metrics(self) -> None:
-        # Example reward function for a self-driving car
         reward = 1.0 - self.car_vel * self.car_vel - 0.01 * torch.abs(self.car_steering_angle)
         reward = torch.where(torch.abs(self.car_pos) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
-
         self.rew_buf[:] = reward
 
     def is_done(self) -> None:
