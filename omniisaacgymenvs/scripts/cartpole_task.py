@@ -45,7 +45,7 @@ class CartpoleTask(BaseTask):
     def set_up_scene(self, scene) -> None:
         # retrieve file path for the Cartpole USD file
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + ("/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/cartpole.usd")
+        usd_path = "/opt/localdata/VirtualBoxVMs/ov/tim/SelfDrivingCar/assets/cartpole.usd"
         # add the Cartpole USD to our stage
         create_prim(prim_path="/World/Cartpole", prim_type="Xform", position=self._cartpole_position)
         add_reference_to_stage(usd_path, "/World/Cartpole")
