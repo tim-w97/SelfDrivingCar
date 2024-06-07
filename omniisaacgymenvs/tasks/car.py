@@ -39,7 +39,7 @@ class CarTask(RLTask):
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
 
-        print("ArticulationView:", self._cars)
+        print("ArticulationView:", self._cars.__dict__)
 
         scene.add(self._cars)
         return
@@ -52,6 +52,8 @@ class CarTask(RLTask):
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
         scene.add(self._cars)
+
+        print("ArticulationView:", self._cars.__dict__)
 
     def get_car(self):
         prim_path = self.default_zero_env_path + "/Car"
@@ -118,17 +120,17 @@ class CarTask(RLTask):
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        self._car_pos_idx = self._cars.get_dof_index("cartJoint")
-        self._car_vel_idx = self._cars.get_dof_index("cartJoint")
-        self._car_orientation_idx = self._cars.get_dof_index("cartJoint")
-        self._car_steering_idx = self._cars.get_dof_index("cartJoint")
-        self._acceleration_dof_idx = self._cars.get_dof_index("cartJoint")
+        self._car_pos_idx = self._cars.get_dof_index("rootJoint")
+        self._car_vel_idx = self._cars.get_dof_index("rootJoint")
+        self._car_orientation_idx = self._cars.get_dof_index("rootJoint")
+        self._car_steering_idx = self._cars.get_dof_index("rootJoint")
+        self._acceleration_dof_idx = self._cars.get_dof_index("rootJoint")
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
 
     def calculate_metrics(self) -> None:
-        # Example reward function for a self-driving car
+        # Example reward function for a self-driving carcartJoint
         reward = 1.0 - self.car_vel * self.car_vel - 0.01 * torch.abs(self.car_steering_angle)
         reward = torch.where(torch.abs(self.car_pos) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
 
