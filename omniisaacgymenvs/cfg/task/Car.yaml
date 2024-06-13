@@ -106,3 +106,6 @@ sim:
     # per-shape
     contact_offset: 0.02
     rest_offset: 0.001
+    #joints
+    left_wheel_joint: "WHEEL_JOINT_LEFT"
+    right_wheel_joint: "WHEEL_JOINT_RIGHT"

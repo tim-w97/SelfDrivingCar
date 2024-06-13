@@ -60,7 +60,7 @@ class CarTask(RLTask):
         print("get_car() prim_path", prim_path)
 
         car = Car(
-            usd_path="/opt/localdata/VirtualBoxVMs/ov/SelfDrivingCar/assets/car.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
+            usd_path="/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car_with_wheels.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
             prim_path=prim_path, name="Car",
             translation=self._car_positions
         )
@@ -69,6 +69,7 @@ class CarTask(RLTask):
         )
 
     def get_observations(self) -> dict:
+        root = self._cars
         pos = self._cars.get_joint_positions(clone=False)
         vel = self._cars.get_joint_velocities(clone=False)
 
@@ -120,11 +121,11 @@ class CarTask(RLTask):
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        self._car_pos_idx = self._cars.get_dof_index("prismaticJoint")
-        self._car_vel_idx = self._cars.get_dof_index("prismaticJoint")
-        self._car_orientation_idx = self._cars.get_dof_index("prismaticJoint")
-        self._car_steering_idx = self._cars.get_dof_index("prismaticJoint")
-        self._acceleration_dof_idx = self._cars.get_dof_index("prismaticJoint")
+        self._car_pos_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
+        self._car_vel_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
+        self._car_orientation_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
+        self._car_steering_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
+        self._acceleration_dof_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
