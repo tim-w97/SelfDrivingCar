@@ -26,7 +26,7 @@ class CarTask(RLTask):
 
         self._num_envs = self._task_cfg["env"]["numEnvs"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._car_positions = torch.tensor([0.0, 0.0, 2.0])
+        self._car_positions = torch.tensor([0.0, 0.0, 0.0])
 
         self._reset_dist = self._task_cfg["env"]["resetDist"]
         # self._max_steering_angle = self._task_cfg["env"]["maxSteeringAngle"]
@@ -79,7 +79,6 @@ class CarTask(RLTask):
 
         # Test
         vel = self._cars.get_joint_velocities()
-        vel[:] = torch.tensor([30.0, 30.0])
         print("Joint 0 velocity",self._cars.get_joint_velocities()[0])
         self._cars.set_joint_velocities(velocities=vel)
 
@@ -120,6 +119,10 @@ class CarTask(RLTask):
 
     def post_reset(self):
         self.car_position = self._cars.get_world_poses(clone=False)
+        vel = self._cars.get_joint_velocities()
+        vel[:] = torch.tensor([30.0, 30.0])
+        print("Joint 0 velocity",self._cars.get_joint_velocities()[0])
+        self._cars.set_joint_velocities(velocities=vel)
 
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
