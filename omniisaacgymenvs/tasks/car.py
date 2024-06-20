@@ -60,7 +60,7 @@ class CarTask(RLTask):
         print("get_car() prim_path", prim_path)
 
         car = Car(
-            usd_path="/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car_with_wheels.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
+            usd_path="assets/car_with_wheels.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
             prim_path=prim_path, name="Car",
             translation=self._car_positions
         )
