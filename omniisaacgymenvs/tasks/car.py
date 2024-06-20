@@ -29,7 +29,7 @@ class CarTask(RLTask):
         self._car_positions = torch.tensor([0.0, 0.0, 2.0])
 
         self._reset_dist = self._task_cfg["env"]["resetDist"]
-        self._max_steering_angle = self._task_cfg["env"]["maxSteeringAngle"]
+        # self._max_steering_angle = self._task_cfg["env"]["maxSteeringAngle"]
         self._max_acceleration = self._task_cfg["env"]["maxAcceleration"]
 
     def set_up_scene(self, scene) -> None:
@@ -69,19 +69,19 @@ class CarTask(RLTask):
         )
 
     def get_observations(self) -> dict:
-        root = self._cars
+
+        # print("Body index 124:",self._cars.get_body_index("Cube"))
+        #print(self._cars.get_world_poses(clone=False))
+        # print("Joint-Velocities", type(self._cars.get_joint_velocities()[0]), len(self._cars.get_joint_velocities()[0]))
+        self.root_pos, self.root_rot = self._cars.get_world_poses(clone=False)
         pos = self._cars.get_joint_positions(clone=False)
         vel = self._cars.get_joint_velocities(clone=False)
 
-        self.car_pos = pos[:, self._car_pos_idx]
-        self.car_vel = vel[:, self._car_vel_idx]
-        self.car_orientation = pos[:, self._car_orientation_idx]
-        self.car_steering_angle = pos[:, self._car_steering_idx]
-
-        self.obs_buf[:, 0] = self.car_pos
-        self.obs_buf[:, 1] = self.car_vel
-        self.obs_buf[:, 2] = self.car_orientation
-        self.obs_buf[:, 3] = self.car_steering_angle
+        # Test
+        vel = self._cars.get_joint_velocities()
+        vel[:] = torch.tensor([30.0, 30.0])
+        print("Joint 0 velocity",self._cars.get_joint_velocities()[0])
+        self._cars.set_joint_velocities(velocities=vel)
 
         observations = {self._cars.name: {"obs_buf": self.obs_buf}}
         return observations
@@ -97,8 +97,6 @@ class CarTask(RLTask):
         actions = actions.to(self._device)
 
         controls = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        controls[:, self._car_steering_idx] = self._max_steering_angle * actions[:, 0]
-        controls[:, self._acceleration_dof_idx] = self._max_acceleration * actions[:, 1]
 
         indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
         self._cars.set_joint_positions(controls, indices=indices)
@@ -106,38 +104,37 @@ class CarTask(RLTask):
     def reset_idx(self, env_ids):
         num_resets = len(env_ids)
 
-        pos = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
-        pos[:, self._car_pos_idx] = 1.0 * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
-        pos[:, self._car_orientation_idx] = 0.125 * math.pi * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
+        # pos = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
+        # pos[:, self._car_pos_idx] = 1.0 * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
+        #pos[:, self._car_orientation_idx] = 0.125 * math.pi * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
 
         vel = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
-        vel[:, self._car_vel_idx] = 0.5 * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
+        #vel[:, self._car_vel_idx] = 0.5 * (1.0 - 2.0 * torch.rand(num_resets, device=self._device))
 
         indices = env_ids.to(dtype=torch.int32)
-        self._cars.set_joint_positions(pos, indices=indices)
-        self._cars.set_joint_velocities(vel, indices=indices)
+        # self._cars.set_joint_positions(pos, indices=indices)
+        #self._cars.set_joint_velocities(vel, indices=indices)
 
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
 
     def post_reset(self):
-        self._car_pos_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
-        self._car_vel_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
-        self._car_orientation_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
-        self._car_steering_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
-        self._acceleration_dof_idx = self._cars.get_dof_index(self._task_cfg["sim"]["Car"]["left_wheel_joint"])
+        self.car_position = self._cars.get_world_poses(clone=False)
+
 
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
         self.reset_idx(indices)
 
     def calculate_metrics(self) -> None:
         # Example reward function for a self-driving carcartJoint
-        reward = 1.0 - self.car_vel * self.car_vel - 0.01 * torch.abs(self.car_steering_angle)
-        reward = torch.where(torch.abs(self.car_pos) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
+        # reward = 1.0 - self.car_vel * self.car_vel - 0.01 * torch.abs(self.car_steering_angle)
+        # reward = torch.where(torch.abs(self.car_pos) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
+
+        reward = torch.zeros(512)
 
         self.rew_buf[:] = reward
 
     def is_done(self) -> None:
-        resets = torch.where(torch.abs(self.car_pos) > self._reset_dist, 1, 0)
-        resets = torch.where(self.progress_buf >= self._max_episode_length, 1, resets)
+        # resets = torch.where(torch.abs(self.car_pos) > self._reset_dist, 1, 0)
+        resets = torch.zeros(512)
         self.reset_buf[:] = resets
