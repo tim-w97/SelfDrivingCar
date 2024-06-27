@@ -23,7 +23,7 @@ class CarTask(RLTask):
 
         self._num_envs = self._task_cfg["env"]["numEnvs"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._initial_position = torch.tensor(self._task_cfg["env"]["initial_position"])
+        self._initial_position = self._task_cfg["env"]["initial_position"]
         self.aimed_position = self._task_cfg["env"]["aimed_position"]
 
         self._reset_dist = self._task_cfg["env"]["resetDist"]
@@ -56,7 +56,7 @@ class CarTask(RLTask):
         car = Car(
             usd_path="assets/car_with_wheels.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
             prim_path=prim_path, name="Car",
-            translation=self._initial_position
+            translation=torch.tensor(self._initial_position, device=self._device)
         )
         self._sim_config.apply_articulation_settings(
             "Car", get_prim_at_path(car.prim_path), self._sim_config.parse_actor_config("Car")
@@ -64,8 +64,14 @@ class CarTask(RLTask):
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
-        self.car_position,_= self._cars.get_world_poses(clone=False)
-        self.car_velocity = self._cars.get_joint_velocities()
+        position,_= self._cars.get_world_poses(clone=False)
+        velocity = self._cars.get_joint_velocities()
+
+        aimed_position = torch.tensor(self.aimed_position, device=self._device)
+
+        position = position.sub(aimed_position)
+        self.car_position = torch.norm(position)
+        self.car_velocity = velocity
         # TODO: How to connect these two observations with the buffer?
 
         observations = {self._cars.name: {"obs_buf": self.obs_buf}}
@@ -120,14 +126,13 @@ class CarTask(RLTask):
     def calculate_metrics(self) -> None:
         
         # TODO: Belohnung, wenn das Model eine hohe Geschwindigkeit hat
-        # reward = 1.0 * self.car_velocity * 0.01
+        reward = 1.0 * self.car_velocity * 0.01
         print("reward", type(self.car_velocity))
         # TODO: Bestrafung, wenn das Model sich immer weiter vom Punkt entfernt
-        # reward = torch.where(torch.abs(torch.tensor([0.0, 0.0])) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
+        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
 
-        self.rew_buf[:] = torch.zeros(512, device=self._device)
+        self.rew_buf[:] = torch.rand(512, device=self._device)
 
     def is_done(self) -> None:
-        # resets = torch.where(torch.abs(self.car_pos) > self._reset_dist, 1, 0)
-        resets = torch.zeros(512)
+        resets = torch.where(torch.abs(self.car_position) > self._reset_dist, 1, 0)
         self.reset_buf[:] = resets

@@ -13,7 +13,7 @@ env:
   envSpacing: 6.0
 
   # Cartpole reset distance limit
-  resetDist: 3.0
+  resetDist: 30.0
   # Cartpole effort scaling
   maxEffort: 400.0
 
@@ -24,7 +24,7 @@ env:
   # perform 2 simulation steps for every action (applies actions every 2 simulation steps)
   controlFrequencyInv: 2 # 60 Hz
   maxSteeringAngle: 45.0
-  maxAcceleration: 10.0
+  maxAcceleration: 250.0
 
   # positions
   initial_position: [0.0, 0.0, 0.0]
