@@ -64,7 +64,7 @@ class CarTask(RLTask):
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
-        self.car_position,_,_= self._cars.get_world_poses(clone=False)
+        self.car_position,_= self._cars.get_world_poses(clone=False)
         self.car_velocity = self._cars.get_joint_velocities()
         # TODO: How to connect these two observations with the buffer?
 
@@ -81,16 +81,17 @@ class CarTask(RLTask):
 
         # TODO: Apply the action
         actions = torch.tensor(actions)
+        # print("Actions: ", len(actions), actions.shape)
+        indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
 
         forces = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        forces[:, 0] = self._max_acceleration * actions[0]
-        forces[:, 1] = self._max_acceleration * actions[1]
+        forces[:, 0] = self._max_acceleration * actions[:,0]
+        forces[:, 1] = self._max_acceleration * actions[:,1]
 
         self._cars.set_joint_efforts(forces, indices=indices)
 
         # Ist das wirklich notwenig?
         controls = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
         self._cars.set_joint_positions(controls, indices=indices)
 
     def reset_idx(self, env_ids):
@@ -104,9 +105,9 @@ class CarTask(RLTask):
 
     def post_reset(self):
         # Reset Poses
-        poses = self._cars.get_world_poses()
-        poses[:, 0] = torch.tensor(self._initial_position)
-        self._cars.set_world_poses(poses)
+        positions, orientations = self._cars.get_world_poses() # poses returns tuple array
+        print(type(positions))
+        self._cars.set_world_poses(positions=positions, orientations=orientations)
 
         # Reset Joint Velocities
         velocity = self._cars.get_joint_velocities()
@@ -119,11 +120,12 @@ class CarTask(RLTask):
     def calculate_metrics(self) -> None:
         
         # TODO: Belohnung, wenn das Model eine hohe Geschwindigkeit hat
-        reward = 1.0 * self.car_velocity * 0.01
+        # reward = 1.0 * self.car_velocity * 0.01
+        print("reward", type(self.car_velocity))
         # TODO: Bestrafung, wenn das Model sich immer weiter vom Punkt entfernt
-        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
+        # reward = torch.where(torch.abs(torch.tensor([0.0, 0.0])) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
 
-        self.rew_buf[:] = reward
+        self.rew_buf[:] = torch.zeros(512, device=self._device)
 
     def is_done(self) -> None:
         # resets = torch.where(torch.abs(self.car_pos) > self._reset_dist, 1, 0)
