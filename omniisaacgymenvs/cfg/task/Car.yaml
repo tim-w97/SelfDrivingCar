@@ -24,7 +24,7 @@ env:
   # perform 2 simulation steps for every action (applies actions every 2 simulation steps)
   controlFrequencyInv: 2 # 60 Hz
   maxSteeringAngle: 45.0
-  maxAcceleration: 250.0
+  maxAcceleration: 20.0
 
   # positions
   initial_position: [0.0, 0.0, 0.0]

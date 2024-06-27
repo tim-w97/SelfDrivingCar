@@ -10,7 +10,7 @@ class CarTask(RLTask):
         self._max_episode_length = 1000  # Adjust episode length as needed
 
         # Update number of observations and actions based on car's state
-        self._num_observations = 8  # Example: position, velocity, orientation, etc.
+        self._num_observations = 3  # Example: position, velocity, orientation, etc.
         self._num_actions = 2  # Example: steering angle, acceleration
 
         RLTask.__init__(self, name, env)
@@ -64,15 +64,18 @@ class CarTask(RLTask):
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
-        position,_= self._cars.get_world_poses(clone=False)
+        position, observations= self._cars.get_world_poses(clone=False)
         velocity = self._cars.get_joint_velocities()
 
         aimed_position = torch.tensor(self.aimed_position, device=self._device)
 
-        position = position.sub(aimed_position)
-        self.car_position = torch.norm(position)
+        self.car_position = torch.norm(position.sub(aimed_position))
         self.car_velocity = velocity
+
         # TODO: How to connect these two observations with the buffer?
+        # self.obs_buf[:, 0] = position
+        # self.obs_buf[:, 1] = velocity
+        # self.obs_buf[:, 2] = observations
 
         observations = {self._cars.name: {"obs_buf": self.obs_buf}}
         return observations
@@ -86,19 +89,16 @@ class CarTask(RLTask):
             self.reset_idx(reset_env_ids)
 
         # TODO: Apply the action
-        actions = torch.tensor(actions)
+        actions = actions.to(self._device)
         # print("Actions: ", len(actions), actions.shape)
-        indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
 
         forces = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        forces[:, 0] = self._max_acceleration * actions[:,0]
-        forces[:, 1] = self._max_acceleration * actions[:,1]
+        
+        forces[:, 0] = self._max_acceleration * actions[:, 0]
+        forces[:, 1] = self._max_acceleration * actions[:, 1]
 
-        self._cars.set_joint_efforts(forces, indices=indices)
-
-        # Ist das wirklich notwenig?
-        controls = torch.zeros((self._cars.count, self._cars.num_dof), dtype=torch.float32, device=self._device)
-        self._cars.set_joint_positions(controls, indices=indices)
+        indices = torch.arange(self._cars.count, dtype=torch.int32, device=self._device)
+        self._cars.set_joint_velocities(forces, indices=indices)
 
     def reset_idx(self, env_ids):
         num_resets = len(env_ids)
@@ -112,7 +112,6 @@ class CarTask(RLTask):
     def post_reset(self):
         # Reset Poses
         positions, orientations = self._cars.get_world_poses() # poses returns tuple array
-        print(type(positions))
         self._cars.set_world_poses(positions=positions, orientations=orientations)
 
         # Reset Joint Velocities
@@ -127,7 +126,6 @@ class CarTask(RLTask):
         
         # TODO: Belohnung, wenn das Model eine hohe Geschwindigkeit hat
         reward = 1.0 * self.car_velocity * 0.01
-        print("reward", type(self.car_velocity))
         # TODO: Bestrafung, wenn das Model sich immer weiter vom Punkt entfernt
         reward = torch.where(torch.abs(self.car_position) > self._reset_dist, torch.ones_like(reward) * -2.0, reward)
 
