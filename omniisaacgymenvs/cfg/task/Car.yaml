@@ -13,7 +13,7 @@ env:
   envSpacing: 6.0
 
   # Cartpole reset distance limit
-  resetDist: 30.0
+  resetDist: 20.0
   # Cartpole effort scaling
   maxEffort: 400.0
 
@@ -27,8 +27,10 @@ env:
   maxAcceleration: 20.0
 
   # positions
-  initial_position: [0.0, 0.0, 0.0]
+  initial_position: [0.0, 0.0, 2.0]
   aimed_position: [10.0, 0.0, 0.0]
+
+  epsilon: 0.5
 
 # simulation related parameters
 sim:
