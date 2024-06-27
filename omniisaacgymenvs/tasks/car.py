@@ -10,7 +10,7 @@ class CarTask(RLTask):
         self._max_episode_length = 1000  # Adjust episode length as needed
 
         # Update number of observations and actions based on car's state
-        self._num_observations = 3  # Example: position, velocity, orientation, etc.
+        self._num_observations = 9  # Example: position, velocity, orientation, etc.
         self._num_actions = 2  # Example: steering angle, acceleration
 
         RLTask.__init__(self, name, env)
@@ -64,7 +64,7 @@ class CarTask(RLTask):
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
-        position, observations= self._cars.get_world_poses(clone=False)
+        position, orientation = self._cars.get_world_poses(clone=False)
         velocity = self._cars.get_joint_velocities()
 
         aimed_position = torch.tensor(self.aimed_position, device=self._device)
@@ -73,9 +73,15 @@ class CarTask(RLTask):
         self.car_velocity = velocity
 
         # TODO: How to connect these two observations with the buffer?
-        # self.obs_buf[:, 0] = position
-        # self.obs_buf[:, 1] = velocity
-        # self.obs_buf[:, 2] = observations
+        self.obs_buf[:, 0] = position[:, 0]
+        self.obs_buf[:, 1] = position[:, 1]
+        self.obs_buf[:, 2] = position[:, 2]
+        self.obs_buf[:, 3] = velocity[:, 0]
+        self.obs_buf[:, 4] = velocity[:, 1]
+        self.obs_buf[:, 5] = orientation[:, 0]
+        self.obs_buf[:, 6] = orientation[:, 1]
+        self.obs_buf[:, 7] = orientation[:, 2]
+        self.obs_buf[:, 8] = orientation[:, 3]
 
         observations = {self._cars.name: {"obs_buf": self.obs_buf}}
         return observations
@@ -105,6 +111,7 @@ class CarTask(RLTask):
         velocity = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
         
         # TODO: Müssen alle Autos zurückgesetzt werden oder nur ein paar
+        self._cars.set_joint_velocities(velocity)
 
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
