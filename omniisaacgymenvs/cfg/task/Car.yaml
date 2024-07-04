@@ -27,7 +27,7 @@ env:
   maxAcceleration: 20.0
 
   # positions
-  initial_position: [0.0, 0.0, 2.0]
+  initial_position: [0.0, 0.0, 0.5]
   aimed_position: [10.0, 0.0, 0.0]
 
   epsilon: 0.5

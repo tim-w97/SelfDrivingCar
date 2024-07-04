@@ -6,6 +6,7 @@ from omniisaacgymenvs.robots.articulations.car import Car
 
 class CarTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
+        self.position_old = None
         self.update_config(sim_config)
         self._max_episode_length = 1000  # Adjust episode length as needed
 
@@ -66,14 +67,21 @@ class CarTask(RLTask):
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
+            
         position, orientation = self._cars.get_world_poses(clone=False)
         velocity = self._cars.get_joint_velocities()
 
         aimed_position = torch.tensor(self.aimed_position, device=self._device)
-
         position = position - self._env_pos
 
+        if self.position_old == None:
+            distance = torch.zeros(self._num_envs, device=self._device)
+        else:
+            distance = torch.norm(self.position_old.sub(aimed_position), dim=1)
+
+        self.position_old = position
         self.car_position = torch.norm(position.sub(aimed_position), dim=1)
+        self.distance_change = distance - self.car_position
         self.car_velocity = velocity
 
         # TODO: How to connect these two observations with the buffer?
@@ -111,19 +119,21 @@ class CarTask(RLTask):
     def reset_idx(self, env_ids):
         num_resets = len(env_ids)
         
-        position = self._env_pos[env_ids].add(torch.tensor(self._initial_position, device=self._device))
-        velocity = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
+        # Es müssen nur die auf 0 gesetzt werden, die auch fertig sind
+        prim_position = self._env_pos[env_ids].add(torch.tensor(self._initial_position, device=self._device))
         prim_velocity = torch.zeros((num_resets, 6), device=self._device)
         orientation = torch.zeros((num_resets, 4), dtype=torch.float32, device=self._device)
+        joint_velocity = torch.zeros((num_resets, self._cars.num_dof), device=self._device)
+        joint_positions = torch.zeros((num_resets, 2), device=self._device)
 
         orientation[:, 3] = 1.0
 
         indices = env_ids.to(dtype=torch.int32)
-
         
-        self._cars.set_joint_velocities(velocity, indices=indices)
+        self._cars.set_joint_velocities(joint_velocity, indices=indices)
+        self._cars.set_joint_positions(positions=joint_positions, indices=indices) 
+        self._cars.set_world_poses(positions=prim_position, orientations=orientation, indices=indices)
         self._cars.set_velocities(velocities=prim_velocity, indices=indices)
-        self._cars.set_world_poses(positions=position, orientations=orientation, indices=indices)
 
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
@@ -136,10 +146,10 @@ class CarTask(RLTask):
         
         reward = torch.zeros(512, device=self._device)
         # Belohnung
-        reward = torch.abs(self.car_position) * -0.01
-        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 10.0, reward)
+        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 100.0, reward)
+        reward = reward + self.distance_change * 0.1
         # Bestrafung
-        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, reward + torch.ones_like(reward) * -6.0, reward)
+        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, reward + torch.ones_like(reward) * -100.0, reward)
 
         self.rew_buf[:] = reward
 
