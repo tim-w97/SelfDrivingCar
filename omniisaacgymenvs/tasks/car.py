@@ -1,8 +1,13 @@
 import torch
-from omni.isaac.core.articulations import ArticulationView
+from omni.isaac.core.articulations import ArticulationView, Articulation
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
 from omniisaacgymenvs.robots.articulations.car import Car
+
+# Test
+import carb
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 class CarTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
@@ -36,34 +41,51 @@ class CarTask(RLTask):
 
     def set_up_scene(self, scene) -> None:
         self.get_car()
+        self.get_flags()
         super().set_up_scene(scene)
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
+        self._flags = Articulation(
+            prim_path="/World/envs/.*/flag"
+        )
 
         scene.add(self._cars)
+        scene.add(self._flags)
         return
 
     def initialize_views(self, scene):
+        print("initialize_views wird aufgerufen")
         super().initialize_views(scene)
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
+        self._flags = Articulation(
+            prim_path="/World/envs/.*/flag"
+        )
+        
         scene.add(self._cars)
+        scene.add(self._flags)
 
     def get_car(self):
         prim_path = self.default_zero_env_path + "/Car"
 
         car = Car(
-            usd_path="assets/car_with_wheels.usd", #/home/HOF-UNIVERSITY.DE/ndemel/SelfDrivingCar/assets/car.usd
+            usd_path="assets/car_with_wheels.usd",
             prim_path=prim_path, name="Car",
             translation=torch.tensor(self._initial_position, device=self._device)
         )
         self._sim_config.apply_articulation_settings(
             "Car", get_prim_at_path(car.prim_path), self._sim_config.parse_actor_config("Car")
         )
+
+    def get_flags(self):
+        prim_path = self.default_zero_env_path + "/flag"
+        usd_path="assets/flag.usd"
+
+        add_reference_to_stage(usd_path, prim_path)
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
