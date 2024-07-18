@@ -47,7 +47,7 @@ class CarTask(RLTask):
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
         self._flags = Articulation(
-            prim_path="/World/envs/.*/flag"
+            prim_path="/World/envs/.*/flag", name="flag_view"
         )
 
         scene.add(self._cars)
@@ -57,13 +57,17 @@ class CarTask(RLTask):
     def initialize_views(self, scene):
         print("initialize_views wird aufgerufen")
         super().initialize_views(scene)
+
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
+        if scene.object_exists("flag_view"):
+            scene.remove_object("flag_view", registry_only=True)
+
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
         self._flags = Articulation(
-            prim_path="/World/envs/.*/flag"
+            prim_path="/World/envs/.*/flag", name="flag_view"
         )
         
         scene.add(self._cars)
