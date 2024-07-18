@@ -43,7 +43,7 @@ class CarTask(RLTask):
 
     def set_up_scene(self, scene) -> None:
         self.get_car()
-        # self.get_flags()
+        self.get_flags()
         super().set_up_scene(scene)
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
@@ -52,10 +52,11 @@ class CarTask(RLTask):
         #     prim_path="/World/envs/.*/flag", name="flag_view"
         # )
 
-        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
-        scene.add(self._cylinder)
-
         scene.add(self._cars)
+        self._flags = self._flags = ArticulationView(prim_paths_expr="/World/envs/.*/Flag", name="flag_view", reset_xform_properties=False)
+        scene.add(self._flags)
+        
+
         # scene.add(self._flags)
         return
 
@@ -63,12 +64,13 @@ class CarTask(RLTask):
         print("initialize_views wird aufgerufen")
         super().initialize_views(scene)
 
+        if scene.object_exists("flag_view"):
+            scene.remove_object("flag_view")
+            
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
         # if scene.object_exists("flag_view"):
         #     scene.remove_object("flag_view", registry_only=True)
-        if scene.object_exists("rüdiger"):
-            scene.remove_object("rüdiger")
 
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
@@ -76,9 +78,11 @@ class CarTask(RLTask):
         # self._flags = Rigid(
         #     prim_path="/World/envs/.*/flag", name="flag_view"
         # )
-        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
-        scene.add(self._cylinder)
         scene.add(self._cars)
+        self._flags = self._flags = ArticulationView(prim_paths_expr="/World/envs/.*/Flag", name="flag_view", reset_xform_properties=False)
+        scene.add(self._flags)
+        
+        
         # scene.add(self._flags)
 
     def get_car(self):
@@ -94,12 +98,16 @@ class CarTask(RLTask):
         )
 
     def get_flags(self):
-        prim_path = self.default_zero_env_path + "/flag"
+        prim_path = self.default_zero_env_path + "/Flag"
         flag = Flag(
-            usd_path="assets/flag.usd",
-            prim_path=prim_path, name="Flag",
-            translation=torch.tensor(self._initial_position, device=self._device)
+             usd_path="assets/flag.usd",
+             prim_path=prim_path, name="Flag",
+             #translation=torch.tensor(self._initial_position, device=self._device)
         )
+        self._sim_config.apply_articulation_settings(
+            "Flag", get_prim_at_path(flag.prim_path), self._sim_config.parse_actor_config("Flag")
+        )  
+            
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
