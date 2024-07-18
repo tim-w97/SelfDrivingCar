@@ -1,8 +1,10 @@
 import torch
 from omni.isaac.core.articulations import ArticulationView, Articulation
+from omni.isaac.core.prims.rigid_prim import RigidPrimView
 from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.objects.cylinder import FixedCylinder
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
-from omniisaacgymenvs.robots.articulations.car import Car
+from omniisaacgymenvs.robots.articulations.car import Car, Flag
 
 # Test
 import carb
@@ -41,17 +43,20 @@ class CarTask(RLTask):
 
     def set_up_scene(self, scene) -> None:
         self.get_car()
-        self.get_flags()
+        # self.get_flags()
         super().set_up_scene(scene)
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
-        self._flags = Articulation(
-            prim_path="/World/envs/.*/flag", name="flag_view"
-        )
+        # self._flags = RigidPrimView(
+        #     prim_path="/World/envs/.*/flag", name="flag_view"
+        # )
+
+        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
+        scene.add(self._cylinder)
 
         scene.add(self._cars)
-        scene.add(self._flags)
+        # scene.add(self._flags)
         return
 
     def initialize_views(self, scene):
@@ -60,18 +65,21 @@ class CarTask(RLTask):
 
         if scene.object_exists("car_view"):
             scene.remove_object("car_view", registry_only=True)
-        if scene.object_exists("flag_view"):
-            scene.remove_object("flag_view", registry_only=True)
+        # if scene.object_exists("flag_view"):
+        #     scene.remove_object("flag_view", registry_only=True)
+        if scene.object_exists("rüdiger"):
+            scene.remove_object("rüdiger")
 
         self._cars = ArticulationView(
             prim_paths_expr="/World/envs/.*/Car", name="car_view", reset_xform_properties=False
         )
-        self._flags = Articulation(
-            prim_path="/World/envs/.*/flag", name="flag_view"
-        )
-        
+        # self._flags = Rigid(
+        #     prim_path="/World/envs/.*/flag", name="flag_view"
+        # )
+        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
+        scene.add(self._cylinder)
         scene.add(self._cars)
-        scene.add(self._flags)
+        # scene.add(self._flags)
 
     def get_car(self):
         prim_path = self.default_zero_env_path + "/Car"
@@ -87,9 +95,11 @@ class CarTask(RLTask):
 
     def get_flags(self):
         prim_path = self.default_zero_env_path + "/flag"
-        usd_path="assets/flag.usd"
-
-        add_reference_to_stage(usd_path, prim_path)
+        flag = Flag(
+            usd_path="assets/flag.usd",
+            prim_path=prim_path, name="Flag",
+            translation=torch.tensor(self._initial_position, device=self._device)
+        )
 
     def get_observations(self) -> dict:
         # TODO: Beobachtungen für Position und Geschwindigkeit
