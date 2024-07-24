@@ -52,8 +52,8 @@ class CarTask(RLTask):
         #     prim_path="/World/envs/.*/flag", name="flag_view"
         # )
 
-        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
-        scene.add(self._cylinder)
+        #self._cylinder = FixedCylinder(position=torch.tensor(self.aimed_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
+        #scene.add(self._cylinder)
 
         scene.add(self._cars)
         # scene.add(self._flags)
@@ -76,8 +76,8 @@ class CarTask(RLTask):
         # self._flags = Rigid(
         #     prim_path="/World/envs/.*/flag", name="flag_view"
         # )
-        self._cylinder = FixedCylinder(position=torch.tensor(self._initial_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
-        scene.add(self._cylinder)
+        #self._cylinder = FixedCylinder(position=torch.tensor(self.aimed_position, device=self._device), name="rüdiger", prim_path="/World/Xform/Cylinder")
+        #scene.add(self._cylinder)
         scene.add(self._cars)
         # scene.add(self._flags)
 
