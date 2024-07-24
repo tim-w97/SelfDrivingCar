@@ -1,4 +1,5 @@
 import torch
+import random as rn
 from omni.isaac.core.articulations import ArticulationView, Articulation
 from omni.isaac.core.prims.rigid_prim import RigidPrimView
 from omni.isaac.core.utils.prims import get_prim_at_path
@@ -20,7 +21,6 @@ class CarTask(RLTask):
         # Update number of observations and actions based on car's state
         self._num_observations = 9  # Example: position, velocity, orientation, etc.
         self._num_actions = 2  # Example: steering angle, acceleration
-
         RLTask.__init__(self, name, env)
         return
 
@@ -33,6 +33,7 @@ class CarTask(RLTask):
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._initial_position = self._task_cfg["env"]["initial_position"]
         self.aimed_position = self._task_cfg["env"]["aimed_position"]
+        #self.aimed_position = [rn.randint(5,20),rn.randint(5,20),0]
 
         self._reset_dist = self._task_cfg["env"]["resetDist"]
         self._max_acceleration = self._task_cfg["env"]["maxAcceleration"]
@@ -106,7 +107,7 @@ class CarTask(RLTask):
             
         position, orientation = self._cars.get_world_poses(clone=False)
         velocity = self._cars.get_joint_velocities()
-
+        print(self.aimed_position)
         aimed_position = torch.tensor(self.aimed_position, device=self._device)
         position = position - self._env_pos
 
@@ -193,5 +194,4 @@ class CarTask(RLTask):
 
         resets = torch.where(torch.abs(self.car_position) > self._reset_dist, 1, 0)
         resets = torch.where(torch.abs(self.car_position) < self.epsilon, 1, resets)
-
         self.reset_buf[:] = resets
