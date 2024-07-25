@@ -1,1 +1,1 @@
-/opt/localdata/VirtualBoxVMs/ov/isaac_sim-2023.1.1/python.sh omniisaacgymenvs/scripts/rlgames_train.py task=Car
+/opt/localdata/VirtualBoxVMs/ov/isaac_sim-2023.1.1/python.sh omniisaacgymenvs/scripts/rlgames_train.py task=Car checkpoint='/opt/localdata/VirtualBoxVMs/ov/isaac_sim-2023.1.1/SelfDrivingCar/omniisaacgymenvs/runs/Car/nn/Car.pth' 
