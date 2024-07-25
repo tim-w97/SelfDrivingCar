@@ -107,7 +107,7 @@ class CarTask(RLTask):
             
         position, orientation = self._cars.get_world_poses(clone=False)
         velocity = self._cars.get_joint_velocities()
-        print(self.aimed_position)
+        #print(self.aimed_position)
         aimed_position = torch.tensor(self.aimed_position, device=self._device)
         position = position - self._env_pos
 
@@ -174,6 +174,9 @@ class CarTask(RLTask):
 
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
+        #self._cars[0].o = [rn.randint(5,20),rn.randint(5,20),0]
+        #print("RESET",env_ids)
+
 
     def post_reset(self):
         indices = torch.arange(self._cars.count, dtype=torch.int64, device=self._device)
@@ -184,14 +187,14 @@ class CarTask(RLTask):
         reward = torch.zeros(512, device=self._device)
         # Belohnung
         reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 100.0, reward)
-        reward = reward + self.distance_change * 0.1
+        
+        reward = torch.where(abs(self.distance_change) < 4.1237e-02, reward + 2.5,reward)
+        #reward = torch.where(abs(self.distance_change) > 1.8023e-02, reward - 10.0,reward)
         # Bestrafung
         reward = torch.where(torch.abs(self.car_position) > self._reset_dist, reward + torch.ones_like(reward) * -100.0, reward)
-
         self.rew_buf[:] = reward
 
     def is_done(self) -> None:
-
         resets = torch.where(torch.abs(self.car_position) > self._reset_dist, 1, 0)
         resets = torch.where(torch.abs(self.car_position) < self.epsilon, 1, resets)
         self.reset_buf[:] = resets

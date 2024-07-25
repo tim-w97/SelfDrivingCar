@@ -30,7 +30,7 @@ env:
   initial_position: [0.0, 0.0, 0.5]
   aimed_position: [10.0, 0.0, 0.0]
 
-  epsilon: 0.5
+  epsilon: 2
 
 # simulation related parameters
 sim:
