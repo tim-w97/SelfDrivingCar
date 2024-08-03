@@ -186,14 +186,14 @@ class CarTask(RLTask):
         
         reward = torch.zeros(512, device=self._device)
         # Belohnung
-        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 100.0, reward) #1000
-        alpha = 0.4
-        impact = 0.1 #0.4
+        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 200.0, reward) #1000
+        alpha = 2
+        impact = 0.4 #0.4
         reward += impact * (self.distance_change - alpha) ** 3
         # reward = torch.where(abs(self.distance_change) < 4.1237e-02, reward + 2.5,reward)
         # reward = torch.where(abs(self.distance_change) > 1.8023e-02, reward - 10.0,reward)
         # Bestrafung
-        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, reward + torch.ones_like(reward) * -100.0, reward)
+        reward = torch.where(torch.abs(self.car_position) > self._reset_dist, reward + torch.ones_like(reward) * -200.0, reward)
         self.rew_buf[:] = reward
 
     def is_done(self) -> None:
