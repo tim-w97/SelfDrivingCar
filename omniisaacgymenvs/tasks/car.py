@@ -186,7 +186,7 @@ class CarTask(RLTask):
         
         reward = torch.zeros(512, device=self._device)
         # Belohnung
-        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 200.0, reward) #1000
+        reward = torch.where(torch.abs(self.car_position) < self.epsilon, reward + torch.ones_like(reward) * 800.0, reward) #1000
         alpha = 2
         impact = 0.4 #0.4
         reward += impact * (self.distance_change - alpha) ** 3
